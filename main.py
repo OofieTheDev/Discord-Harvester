@@ -8,14 +8,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
-CHANNEL_ID = "" # place the channel ID here
+CHANNEL_ID = "" # place channel ID here
 
 URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages"
 
 class DiscordHarvester:
     # these are just the filetypes I wanted to save, you can add more if you wish by seeing the full list of content-types
-    IMAGE_TYPES = ("image/jpeg", "image/png")
-    VIDEO_TYPES = ("video/mp4")
+    IMAGE_TYPES = ("image/jpeg", "image/png", "jpg", "png")
+    VIDEO_TYPES = ("video/mp4", "mp4")
 
     HEADERS = {
         "accept": "*/*",
@@ -28,14 +28,18 @@ class DiscordHarvester:
         "x-discord-locale": "en-US",
     }
 
-    def __init__(self, number, whole=False, download_pics=False, download_videos=False, filter=[]):
+    def __init__(self, number, whole=False, download_pics=False, download_videos=False, filter=[], before=None):
         self.rounds = 0
-        self.first = True
+        if before is None:
+            self.first = True
+        else:
+            self.first = False
         self.number = number
         self.whole = whole
         self.download_pics = download_pics
         self.download_videos = download_videos
         self.media_count = 0
+        self.before = before
 
         self.MEDIA_DIR = None
         self.msgList = []
@@ -67,7 +71,11 @@ class DiscordHarvester:
                 params = {"limit": 100}
                 self.first = not self.first
             else:
-                params = {"before": next_id, "limit": 100}
+                if self.before is not None:
+                    params = {"before": self.before, "limit": 100}
+                    self.before = None
+                else:
+                    params = {"before": next_id, "limit": 100}
 
             res = requests.get(URL, headers=DiscordHarvester.HEADERS, params=params)
 
@@ -106,17 +114,33 @@ class DiscordHarvester:
             if len(msg['attachments']) != 0:
                 for a in msg['attachments']:
                     media_url = a['url']
-                    media_extension = a['content_type'].split("/")[1]
-                    if a['content_type'] in DiscordHarvester.IMAGE_TYPES and self.download_pics:
-                        media_data = requests.get(media_url).content
-                        with open(os.path.join(self.MEDIA_DIR, f"pic{self.media_count}.{media_extension}"), "wb") as p:
-                            p.write(media_data)
-                            self.media_count +=1 
-                    if a['content_type'] in DiscordHarvester.VIDEO_TYPES and self.download_videos:
-                        media_data = requests.get(media_url).content
-                        with open(os.path.join(self.MEDIA_DIR, f"video{self.media_count}.{media_extension}"), "wb") as v:
-                            v.write(media_data)
-                            self.media_count +=1 
+                    try:
+                        media_extension = a['content_type'].split("/")[1]
+
+                        if a['content_type'] in DiscordHarvester.IMAGE_TYPES and self.download_pics:
+                            media_data = requests.get(media_url).content
+                            with open(os.path.join(self.MEDIA_DIR, f"pic{self.media_count}.{media_extension}"), "wb") as p:
+                                p.write(media_data)
+                                self.media_count +=1 
+                        if a['content_type'] in DiscordHarvester.VIDEO_TYPES and self.download_videos:
+                            media_data = requests.get(media_url).content
+                            with open(os.path.join(self.MEDIA_DIR, f"video{self.media_count}.{media_extension}"), "wb") as v:
+                                v.write(media_data)
+                                self.media_count +=1
+                    except KeyError:
+                        media_extension = a['filename'].split(".")[-1]
+                
+                        if media_extension in DiscordHarvester.IMAGE_TYPES and self.download_pics:
+                            media_data = requests.get(media_url).content
+                            with open(os.path.join(self.MEDIA_DIR, f"pic{self.media_count}.{media_extension}"), "wb") as p:
+                                p.write(media_data)
+                                self.media_count +=1
+                        if media_extension in DiscordHarvester.VIDEO_TYPES and self.download_videos:
+                            media_data = requests.get(media_url).content
+                            with open(os.path.join(self.MEDIA_DIR, f"video{self.media_count}.{media_extension}"), "wb") as v:
+                                v.write(media_data)
+                                self.media_count +=1
+
                                 
             return
 
@@ -137,7 +161,7 @@ class DiscordHarvester:
         print(self.download_videos)
         print(self.media_count)
 
-harvester = DiscordHarvester(300, whole=True, download_pics=True, download_videos=True)
+harvester = DiscordHarvester(50_000, whole=True)
 harvester.make_media_dir()
 harvester.calc_rounds()
 harvester.retrieve_msgs()
