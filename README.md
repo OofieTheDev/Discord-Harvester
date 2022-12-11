@@ -32,7 +32,7 @@ I discovered this after using the script to harvest images from an old DM channe
 ### Understanding the __init__
 The __init__ method in the script is defined as follows.
 ```py
-def __init__(self, number, whole=False, download_pics=False, download_videos=False, filter=[]):
+def __init__(self, number, whole=False, download_pics=False, download_videos=False, filter=[], before=None):
 ```
 `number` is the number of messages you wish to retrieve (starting from most recent).
 
@@ -43,6 +43,8 @@ I believe that `download_pics` and `download_videos` are self-explanatory.
 As for filter, this is a list that should contain the user IDs of the message authors whose messages/media you wish to save. For example, if you and Person B have a DM channel that you wish to scrape, but you only want to scrape Person B's messages, then you should put Person B's user ID in the `filter` list, as a STRING. **Do not put it as an integer.**
 
 By doing this, the script will ignore your messages and only save the messages and files sent by Person B. You may put as many user IDs as you want in the `filter` list.
+
+`before` is an optional keyword argument that takes in a single message ID as a string. By providing this argument, the script will start harvesting messages from before that message ID, instead of starting from the latest message.
 
 ### Understanding retrieve_messages
 This is no doubt the longest method besides `prepare_msgs`. However, I am too lazy to explain everything and will just explain one important part.
