@@ -20,6 +20,14 @@ The script allows you to choose whether or not to save the media contained in th
 
 This script harvests close to 200 messages/s. So just keep in mind that if you're retrieving tens of thousands of messages, you'll need to wait a couple minutes.
 
+## :lady_beetle: Debug Log
+### 11 December 2022
+Fixed a bug that prevented the harvesting of media before early 2021.
+
+The reason this bug occured was because I did not know that Discord changed the structure of their message data somewhere around early 2021. After early 2021, the key "content_type" was included in every message. However, before that, it did not exist. Due to this and the fact that the script relied on that key to download images with the correct extension, a KeyError was raised upon the script trying to download any images sent when the old data structure was still in use.
+
+I discovered this after using the script to harvest images from an old DM channel, and have since implemented a fix.
+
 ## :thinking: Code Walkthrough
 ### Understanding the __init__
 The __init__ method in the script is defined as follows.
