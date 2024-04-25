@@ -1,7 +1,7 @@
 # :speech_balloon: Discord Harvester
 
 ## :star: Introduction
-This is a simple Python script that harvests as many messages as you want from a DM channel/server channel (potentially everything, though that could take a while). It stores them in JSON format, which is human-readable and easily filtered/manipulated. I made this as I wanted to save the chat history of certain channels. Thought that someone out there might find it useful, which is why I'm publishing it.
+This is a simple Python script that harvests as many messages as you want from a DM channel/server channel on the popular social app Discord (potentially everything, though that could take a while). It stores them in JSON format, which is human-readable and easily filtered/manipulated. I made this as I wanted to save the chat history of certain channels. Thought that someone out there might find it useful, which is why I'm publishing it.
 
 ## :keyboard: Quick Start
 To get started, simply run 
